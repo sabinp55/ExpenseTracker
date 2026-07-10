@@ -1,23 +1,16 @@
+from app.database.database import Base, engine
+from app.models.expense import Expense
 from fastapi import FastAPI
-from pydantic import BaseModel
+from app.routes.expenses import router as expense_router
 
 app = FastAPI(
     title="Expense Tracker API",
     version="1.0.0"
 )
 
-# Temporary storage
-expenses = []
+Base.metadata.create_all(bind=engine)
 
 
-# Blueprint of an expense
-class Expense(BaseModel):
-    title: str
-    amount: float
-    category: str
-
-
-# Home route
 @app.get("/")
 def root():
     return {
@@ -25,17 +18,4 @@ def root():
     }
 
 
-# Get all expenses
-@app.get("/expenses")
-def get_expenses():
-    return expenses
-
-
-# Add an expense
-@app.post("/expenses")
-def add_expense(expense: Expense):
-    expenses.append(expense)
-    return {
-        "message": "Expense added successfully",
-        "expense": expense
-    }
+app.include_router(expense_router)
