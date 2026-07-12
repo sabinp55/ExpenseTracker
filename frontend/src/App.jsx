@@ -6,8 +6,9 @@ function App() {
   const [expenses, setExpenses] = useState([]);
 
   const [title, setTitle] = useState("");
-const [amount, setAmount] = useState("");
-const [category, setCategory] = useState("");
+  const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     loadExpenses();
@@ -31,19 +32,35 @@ const [category, setCategory] = useState("");
     }
   }
 
+  function editExpense(expense) {
+    setEditingId(expense.id);
+    setTitle(expense.title);
+    setAmount(expense.amount);
+    setCategory(expense.category);
+  }
+
   async function handleSubmit(e) {
   e.preventDefault();
 
   try {
-    await api.post("/expenses", {
-      title,
-      amount: Number(amount),
-      category,
-    });
+    if (editingId) {
+      await api.put(`/expenses/${editingId}`, {
+        title,
+        amount: Number(amount),
+        category,
+      });
+    } else {
+      await api.post("/expenses", {
+        title,
+        amount: Number(amount),
+        category,
+      });
+    }
 
     setTitle("");
     setAmount("");
     setCategory("");
+    setEditingId(null);
 
     loadExpenses();
   } catch (error) {
@@ -77,7 +94,24 @@ const [category, setCategory] = useState("");
           onChange={(e) => setCategory(e.target.value)}
         />
 
-        <button type="submit">Add Expense</button>
+        <button type="submit">
+          {editingId ? "Update Expense" : "Add Expense"}
+        </button>
+
+        {editingId && (
+          <button
+            type="button"
+            onClick={() => {
+              setEditingId(null);
+              setTitle("");
+              setAmount("");
+              setCategory("");
+            }}
+          >
+            Cancel
+          </button>
+        )}
+
       </form>
 
       <div className="expense-list">
@@ -90,6 +124,12 @@ const [category, setCategory] = useState("");
             <span>Rs. {expense.amount}</span>
 
             <span>{expense.category}</span>
+
+            <button
+              onClick={() => editExpense(expense)}
+            >
+              Edit
+            </button>
 
             <button
               onClick={() => deleteExpense(expense.id)}
