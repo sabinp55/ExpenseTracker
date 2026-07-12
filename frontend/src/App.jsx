@@ -22,6 +22,15 @@ const [category, setCategory] = useState("");
     }
   }
 
+  async function deleteExpense(id) {
+    try {
+      await api.delete(`/expenses/${id}`);
+      loadExpenses();
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   async function handleSubmit(e) {
   e.preventDefault();
 
@@ -77,8 +86,16 @@ const [category, setCategory] = useState("");
         {expenses.map((expense) => (
           <div className="expense-item" key={expense.id}>
             <span>{expense.title}</span>
+
             <span>Rs. {expense.amount}</span>
+
             <span>{expense.category}</span>
+
+            <button
+              onClick={() => deleteExpense(expense.id)}
+            >
+              Delete
+            </button>
           </div>
         ))}
       </div>
